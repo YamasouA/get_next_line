@@ -10,42 +10,42 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
-static char	*split(char **before, char c)
+static char	*split(fd_lst *ptr, fd_lst *lst, char c)
 {
 	char	*pos;
 	char	*line;
 	size_t	line_len;
 	char	*temp;
 
-	pos = ft_strchr(*before, c);
-	line_len = pos - *before + 1;
-	line = ft_substr(*before, 0, line_len);
-	temp = *before;
+	pos = ft_strchr(ptr->before, c);
+	line_len = pos - ptr->before + 1;
+    line = ft_strdup(ptr->before, line_len);
+	temp = ptr->before;
 	if (c == '\0')
 		line_len -= 1;
-	*before += line_len;
-	*before = ft_substr(*before, 0, ft_strlen(*before));
+	ptr->before += line_len;
+    ptr->before = ft_strdup(ptr->before, ft_strlen(ptr->before));
 	free(temp);
-	if (line == NULL || *before == NULL)
+	if (line == NULL || ptr->before == NULL)
 	{
-		free(before);
+		ft_lstfree(&lst, ptr);
 		free(line);
-		before = NULL;
+		//ptr->before = NULL;
 		line = NULL;
 	}
 	return (line);
 }
 
-static void	read_size(char **before, int fd)
+static void	read_size(fd_lst *ptr, int fd)
 {
 	ssize_t	cnt;
 	char	*temp;
 	char	*buf;
 
 	cnt = 1;
-	while (cnt > 0 && ft_strchr(*before, '\n') == NULL)
+	while (cnt > 0 && ft_strchr(ptr->before, '\n') == NULL)
 	{
 		buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE+1));
 		if (buf == NULL)
@@ -56,11 +56,11 @@ static void	read_size(char **before, int fd)
 		else
 		{
 			buf[cnt] = '\0';
-			temp = *before;
-			*before = ft_strjoin(*before, buf);
+			temp = ptr->before;
+			ptr->before = ft_strjoin(ptr->before, buf);
 			free(temp);
 			free(buf);
-			if (*before == NULL)
+			if (ptr->before == NULL)
 				break ;
 		}
 	}
@@ -68,23 +68,19 @@ static void	read_size(char **before, int fd)
 
 char	*get_next_line(int fd)
 {
-	static char		*before = NULL;
+	static fd_lst	*lst = NULL;
+    fd_lst          *ptr;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || fd == 1 || fd == 2 || 256 < fd)
 		return (NULL);
-	
-	if (before == NULL)
-	{
-		before = ft_substr("", 1, 1);
-		if (before == NULL)
-		 	return (NULL);
-	}
-	read_size(&before, fd);
-	if (ft_strchr(before, '\n'))
-		return split(&before, '\n');
-	else if (ft_strlen(before) > 0)
-		return split(&before, '\0');
-	free(before);
-	before = NULL;
+	//printf("\nfd \t%d\n", fd);
+	ptr = ft_lstadd(&lst, fd);
+	read_size(ptr, fd);
+	if (ft_strchr(ptr->before, '\n'))
+		return split(ptr, lst, '\n');
+	else if (ft_strlen(ptr->before) > 0)
+		return split(ptr, lst, '\0');
+	//printf("before ft_lstfree\n");
+	ft_lstfree(&lst, ptr);
 	return (NULL);
 }
