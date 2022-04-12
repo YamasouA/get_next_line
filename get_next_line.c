@@ -25,8 +25,7 @@ static char	*split(char **before, char c)
 	temp = *before;
 	if (c == '\0')
 		line_len -= 1;
-	*before += line_len;
-	*before = ft_substr(*before, 0, ft_strlen(*before));
+	*before = ft_substr(*before, line_len, ft_strlen(*before));
 	free(temp);
 	if (line == NULL || *before == NULL)
 	{
@@ -49,7 +48,7 @@ static void	read_size(char **before, int fd)
 	{
 		buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE+1));
 		if (buf == NULL)
-			continue ;
+			return ;
 		cnt = read(fd, buf, BUFFER_SIZE);
 		if (cnt <= 0)
 			free(buf);
@@ -61,7 +60,7 @@ static void	read_size(char **before, int fd)
 			free(temp);
 			free(buf);
 			if (*before == NULL)
-				break ;
+				return ;
 		}
 	}
 }
@@ -70,9 +69,8 @@ char	*get_next_line(int fd)
 {
 	static char		*before = NULL;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || fd > 256 || BUFFER_SIZE <= 0)
 		return (NULL);
-	
 	if (before == NULL)
 	{
 		before = ft_substr("", 1, 1);
