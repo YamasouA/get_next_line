@@ -6,7 +6,7 @@
 /*   By: asouta <asouta@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/06 22:27:30 by asouta            #+#    #+#             */
-/*   Updated: 2021/11/11 19:48:07 by asouta           ###   ########.fr       */
+/*   Updated: 2022/04/21 21:26:31 by asouta           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,11 @@ static char	*split(char **before, char c)
 
 	pos = ft_strchr(*before, c);
 	line_len = pos - *before + 1;
-	line = ft_substr(*before, 0, line_len);
+	line = ft_strdup(*before, line_len);
 	temp = *before;
 	if (c == '\0')
 		line_len -= 1;
-	*before = ft_substr(*before, line_len, ft_strlen(*before));
+	*before = ft_strdup(*before + line_len, ft_strlen(*before) - line_len);
 	free(temp);
 	if (line == NULL || *before == NULL)
 	{
@@ -46,7 +46,7 @@ static void	read_size(char **before, int fd)
 	cnt = 1;
 	while (cnt > 0 && ft_strchr(*before, '\n') == NULL)
 	{
-		buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE+1));
+		buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 		if (buf == NULL)
 			return ;
 		cnt = read(fd, buf, BUFFER_SIZE);
@@ -73,15 +73,15 @@ char	*get_next_line(int fd)
 		return (NULL);
 	if (before == NULL)
 	{
-		before = ft_substr("", 1, 1);
+		before = ft_strdup("", 0);
 		if (before == NULL)
-		 	return (NULL);
+			return (NULL);
 	}
 	read_size(&before, fd);
 	if (ft_strchr(before, '\n'))
-		return split(&before, '\n');
+		return (split(&before, '\n'));
 	else if (ft_strlen(before) > 0)
-		return split(&before, '\0');
+		return (split(&before, '\0'));
 	free(before);
 	before = NULL;
 	return (NULL);
